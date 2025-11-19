@@ -13,6 +13,7 @@ echo "Changing to ozone directory..."
 cd $BASE_FOLDER
 
 echo "Creating subdirectories..."
+mkdir "$BASE_FOLDER/data"
 mkdir --parent $CADDY_ETC_FOLDER
 mkdir --parent $CADDY_DATA_FOLDER
 mkdir $POSTGRES_FOLDER
