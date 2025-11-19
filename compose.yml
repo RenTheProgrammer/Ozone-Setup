@@ -23,7 +23,8 @@ services:
       - caddy_config:/config
     environment:
       - CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
-    
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
   ozone:
     container_name: ozone
     image: ghcr.io/bluesky-social/ozone:0.1
@@ -39,6 +40,8 @@ services:
         condition: service_healthy
     env_file:
       - /ozone/ozone.env
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
 
   postgres:
     container_name: postgres
