@@ -1,55 +1,50 @@
-
 volumes:
   caddy_data:
   caddy_config:
 
+networks:
+  caddy:
+
 name: pbblr-ozone
 services:
   caddy:
-    image: caddybuilds/caddy-cloudflare:latest
+    image: ghcr.io/ninebase/caddy2:latest
+    network_mode: host
     restart: unless-stopped
     depends_on:
-      ozone:
-        condition: service_healthy
-    cap_add:
-      - NET_ADMIN
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - ozone
     env_file:
       - /ozone/.env
-    volumes:
-      - /ozone/caddy/etc/caddy/Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
     environment:
-      - CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
-    
+      CLOUDFLARE_API_TOKEN: $CF_API_TOKEN
+    volumes:
+      - type: bind
+        source: /ozone/caddy/data
+        target: /data
+      - type: bind
+        source: /ozone/caddy/etc/caddy
+        target: /etc/caddy
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
+
   ozone:
     container_name: ozone
     image: ghcr.io/bluesky-social/ozone:0.1
+    network_mode: host
     restart: unless-stopped
-    networks:
-      - ozone
-    healthcheck:
-      test: curl --fail http://localhost:3000/xrpc/_health || exit 1
-      interval: 4s
-      timeout: 5s
-      retries: 10
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
       - /ozone/ozone.env
-
+    labels:
+       com.centurylinklabs.watchtower.enabled: true
   postgres:
     container_name: postgres
     image: postgres:14.11-bookworm
     command: postgres -c listen_addresses=localhost
+    network_mode: host
     restart: unless-stopped
-    networks:
-      - ozone
     healthcheck:
       test: pg_isready -h localhost -U $$POSTGRES_USER
       interval: 2s
@@ -61,7 +56,6 @@ services:
         target: /var/lib/postgresql/data
     env_file:
       - /ozone/postgres.env
-
   watchtower:
     container_name: watchtower
     image: containrrr/watchtower:latest
@@ -73,9 +67,3 @@ services:
     restart: unless-stopped
     environment:
       WATCHTOWER_CLEANUP: true
-      WATCHTOWER_SCHEDULE: '@midnight'
-      WATCHTOWER_LABEL_ENABLE: true
-
-networks:
-  ozone:
-    driver: bridge
