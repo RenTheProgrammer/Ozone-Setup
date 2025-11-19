@@ -29,10 +29,9 @@ services:
   ozone:
     container_name: ozone
     image: ghcr.io/bluesky-social/ozone:0.1
-    network_mode: host
     restart: unless-stopped
-    volumes:
-      - "/ozone/data:/data"
+    networks:
+      - ozone
     healthcheck:
       test: curl --fail http://localhost:3000/xrpc/_health || exit 1
       interval: 4s
@@ -49,6 +48,8 @@ services:
     image: postgres:14.11-bookworm
     command: postgres -c listen_addresses=localhost
     restart: unless-stopped
+    networks:
+      - ozone
     healthcheck:
       test: pg_isready -h localhost -U $$POSTGRES_USER
       interval: 2s
@@ -74,3 +75,7 @@ services:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_SCHEDULE: '@midnight'
       WATCHTOWER_LABEL_ENABLE: true
+
+networks:
+  ozone:
+    driver: bridge
