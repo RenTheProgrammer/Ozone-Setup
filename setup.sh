@@ -7,10 +7,10 @@ CADDY_ETC_FOLDER="$BASE_FOLDER/caddy/etc/caddy"
 POSTGRES_FOLDER="$BASE_FOLDER/postgres"
 
 echo "Creating ozone directory structure..."
-cd / && mkdir /ozone
+cd / && mkdir $BASE_FOLDER
 
 echo "Changing to ozone directory..."
-cd /ozone
+cd $BASE_FOLDER
 
 echo "Creating subdirectories..."
 mkdir --parent $CADDY_ETC_FOLDER
