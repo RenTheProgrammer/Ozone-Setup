@@ -1,5 +1,11 @@
 #!/bin/bash
 
+BASE_FOLDER="/ozone"
+CADDY_FOLDER="$BASE_FOLDER/caddy"
+CADDY_DATA_FOLDER="$BASE_FOLDER/caddy/data"
+CADDY_ETC_FOLDER="$BASE_FOLDER/caddy/etc/caddy"
+POSTGRES_FOLDER="$BASE_FOLDER/postgres"
+
 echo "Creating ozone directory structure..."
 cd / && mkdir /ozone
 
@@ -7,11 +13,12 @@ echo "Changing to ozone directory..."
 cd /ozone
 
 echo "Creating subdirectories..."
-mkdir --parent /caddy/etc/caddy
-mkdir --parent /caddy/data
+mkdir --parent $CADDY_ETC_FOLDER
+mkdir --parent $CADDY_DATA_FOLDER
+mkdir $POSTGRES_FOLDER
 
 echo "Creating Caddyfile"
-cd /caddy/etc/caddy
+cd $CADDY_ETC_FOLDER
 curl -o Caddyfile https://raw.githubusercontent.com/RenTheProgrammer/Ozone-Setup/main/Caddyfile
 
 #Prompt user for domain name
@@ -22,17 +29,17 @@ sed -i "s/{DOMAIN}/$DOMAIN_NAME/g" Caddyfile
 cd /ozone
 
 echo "Creating environment files..."
-touch .env 
+touch "$BASE_FOLDER/.env" 
 echo ".env Created"
-touch postgres.env
+touch "$BASE_FOLDER/postgres.env"
 echo "postgres.env Created"
-touch ozone.env
+touch "$BASE_FOLDER/ozone.env"
 echo "ozone.env Created"
 
 echo "Populating environment files..."
 POSTGRES_PASSWORD="$(openssl rand --hex 16)"
 
-cat <<POSTGRES_CONFIG | sudo tee /ozone/postgres.env
+cat <<POSTGRES_CONFIG | sudo tee $BASE_FOLDER/postgres.env
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 POSTGRES_DB=ozone
@@ -50,7 +57,7 @@ OZONE_SERVER_DID="$(curl --fail --silent --show-error "https://api.bsky.app/xrpc
 OZONE_ADMIN_PASSWORD="$(openssl rand --hex 16)"
 OZONE_SIGNING_KEY_HEX="$(openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32)"
 
-cat <<OZONE_CONFIG | sudo tee /ozone/ozone.env
+cat <<OZONE_CONFIG | sudo tee $BASE_FOLDER/ozone.env
 OZONE_SERVER_DID=${OZONE_SERVER_DID}
 OZONE_PUBLIC_URL=https://${OZONE_HOSTNAME}
 OZONE_ADMIN_DIDS=${OZONE_SERVER_DID}
@@ -68,7 +75,7 @@ echo "Ozone environment file populated."
 
 read -p "Enter Cloudflare token with Zone.Read: " CF_TOKEN
 
-cat <<CLOUDFLARE_CONFIG | sudo tee -a /ozone/.env
+cat <<CLOUDFLARE_CONFIG | sudo tee -a $BASE_FOLDER/.env
 CF_API_TOKEN=$CF_TOKEN
 CLOUDFLARE_CONFIG
 
@@ -79,4 +86,5 @@ echo "Downloading compose.yml..."
 curl -o compose.yml https://raw.githubusercontent.com/RenTheProgrammer/Ozone-Setup/main/compose.yml
 
 echo "Setup complete."
-echo "cd into /ozone and run 'docker-compose up' to start Ozone."
+cd $BASE_FOLDER
+exit 0
