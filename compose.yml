@@ -31,6 +31,8 @@ services:
     image: ghcr.io/bluesky-social/ozone:0.1
     network_mode: host
     restart: unless-stopped
+    volumes:
+      - "/ozone/data:/data"
     healthcheck:
       test: curl --fail http://localhost:3000/xrpc/_health || exit 1
       interval: 4s
