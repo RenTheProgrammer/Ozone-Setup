@@ -1,0 +1,23 @@
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace "example.com" below with your
+# domain name.
+
+{
+  # Set the ACME DNS challenge provider to use Cloudflare for all sites
+  acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
+{DOMAIN} {
+
+
+    # Another common task is to set up a reverse proxy:
+    reverse_proxy localhost:3000
+
+
+    encode gzip
+
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+}
