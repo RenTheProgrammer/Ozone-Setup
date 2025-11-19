@@ -86,6 +86,10 @@ echo ".env file populated."
 echo "Downloading compose.yml..."
 curl -o compose.yml https://raw.githubusercontent.com/RenTheProgrammer/Ozone-Setup/main/compose.yml
 
+echo "Open Ports 443 and 80"
+sudo ufw allow 443
+sudo ufw allow 80
+
 echo "Setup complete."
 cd $BASE_FOLDER
 exit 0
